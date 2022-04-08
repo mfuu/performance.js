@@ -5,14 +5,16 @@ import { Memory } from './plugin/memory'
 import { Paint } from './plugin/paint'
 import { Errors } from './plugin/error'
 import { PageView } from './plugin/pv'
+import { BlankScreen } from './plugin/blank'
 
 import { onload, formatMs } from './utils'
 
 class Performance {
   constructor(options) {
+    this.options = options
     // requestAnimationFrame(this.init.bind(this))
-    this._addEventListener()
-    // this.init()
+    // this._addEventListener()
+    this.init()
   }
 
   init() {
@@ -25,6 +27,7 @@ class Performance {
       FirstInput(this._callback)
       Resources(this._callback)
       Navigation(this._callback)
+      BlankScreen(this._callback, this.options.wrapperElements)
       Memory(this._callback)
       Paint(this._callback)
       Errors(this._callback)
@@ -62,9 +65,14 @@ class Performance {
   }
 
   _addEventListener() {
-    document.addEventListener('popstate', this.init())
-    document.addEventListener('hashchange', this.init())
+    // document.addEventListener('popstate', this.init())
+    // document.addEventListener('hashchange', this.init())
   }
 }
 
-export default Performance
+
+if (typeof require === 'function' && typeof exports === "object" && typeof module === "object") {
+  module.exports = Performance
+} else {
+  window.Performance = Performance
+}

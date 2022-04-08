@@ -427,3 +427,41 @@ HTML中标签元素越多，标签的层级越深，浏览器解析DOM并绘制�
 #### 减少 JS 动画，尽量用 CSS 代替
 
 JS直接操作DOM极容易引起页面的重排。尽量使用CSS3的translate、scale属性代替top、left和height、width，避免大量的重排计算
+
+
+## 待优化功能
+
+* 页面内容变更或者 url 发生变化时再次计算
+* 增加 ajax 和 fetch 的错误拦截
+* 接入信息上报接口
+
+## 如何在项目中使用
+
+将文件打包压缩后
+
+vue项目 在 `main.js` 中引入
+
+```js
+import Performance from 'xxx'
+
+new Performance()
+
+```
+
+普通脚本写法: 
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Performance</title>
+  <script src="./dist/index.js"></script>
+  <script>
+    new Performance()
+  </script>
+</head>
+</html>
+```
+
+通过 `window.performance_information` 可以获取所有有用的数据信息

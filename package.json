@@ -1,0 +1,41 @@
+{
+  "name": "performance",
+  "version": "0.0.1",
+  "description": "web performance test with `window.performance` API",
+  "main": "index.js",
+  "files": [
+    "src",
+    "dist"
+  ],
+  "scripts": {
+    "lint": "eslint --fix src --ext .js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rollup --config"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mfuu/performance.git"
+  },
+  "keywords": [
+    "performance",
+    "timing"
+  ],
+  "author": "mfuu",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mfuu/performance/issues"
+  },
+  "homepage": "https://github.com/mfuu/performance#readme",
+  "devDependencies": {
+    "@babel/core": "^7.8.7",
+    "@babel/preset-env": "^7.8.7",
+    "babel-core": "^7.0.0-bridge.0",
+    "babel-jest": "^25.5.1",
+    "cross-env": "^7.0.3",
+    "eslint": "^6.8.0",
+    "rollup": "^2.61.1",
+    "rollup-plugin-babel": "^4.4.0",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-node-resolve": "^5.2.0"
+  }
+}

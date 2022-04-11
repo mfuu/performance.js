@@ -1,3 +1,5 @@
+import { onload } from "../utils"
+
 const ELEMENTS = ['html', 'body']
 
 // 白屏
@@ -7,9 +9,9 @@ export function BlankScreen(callback, wrapperElements = []) {
   let emptyPoints = 0
 
   function isWrapper(element) {
-    let selector = getSelector(element);
+    let selector = getSelector(element)
     if (elements.indexOf(selector) !== -1) {
-      emptyPoints++;
+      emptyPoints++
     }
   }
   onload(function () {
@@ -33,9 +35,9 @@ export function BlankScreen(callback, wrapperElements = []) {
 }
 
 function getSelector(element) {
-  const { id, className, nodeName } = element;
+  const { id, className, nodeName } = element || {}
   if (id) {
-    return "#" + id;
+    return "#" + id
   } else if (className) {
     // 过滤空白符 + 拼接
     return (
@@ -44,8 +46,8 @@ function getSelector(element) {
         .split(" ")
         .filter((item) => !!item)
         .join(".")
-    );
+    )
   } else {
-    return nodeName.toLowerCase();
+    return nodeName?.toLowerCase()
   }
 }

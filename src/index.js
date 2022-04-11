@@ -11,7 +11,7 @@ import { onload, formatMs } from './utils'
 
 class Performance {
   constructor(options) {
-    this.options = options
+    this.options = options || {}
     // requestAnimationFrame(this.init.bind(this))
     // this._addEventListener()
     this.init()

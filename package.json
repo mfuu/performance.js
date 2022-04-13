@@ -2,7 +2,7 @@
   "name": "performance",
   "version": "0.0.1",
   "description": "web performance test with `window.performance` API",
-  "main": "dist/draggable.js",
+  "main": "dist/performance.js",
   "files": [
     "src",
     "dist"

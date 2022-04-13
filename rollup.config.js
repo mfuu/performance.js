@@ -19,7 +19,7 @@ export default [
     input: 'src/index.js',
     output: {
       format: 'umd',
-      file: 'dist/draggable.js',
+      file: 'dist/performance.js',
       name: 'performance',
       sourcemap: false,
       banner: banner.replace(/\n/, '')
@@ -34,7 +34,7 @@ export default [
     input: 'src/index.js',
     output: {
       format: 'umd',
-      file: 'dist/draggable.min.js',
+      file: 'dist/performance.min.js',
       name: 'performance',
       sourcemap: false,
       banner: banner.replace(/\n/, '')

@@ -1,4 +1,5 @@
 import babel from 'rollup-plugin-babel'
+import { uglify } from 'rollup-plugin-uglify'
 import resolve from 'rollup-plugin-node-resolve'
 import commonJs from 'rollup-plugin-commonjs'
 const packageJson = require('./package.json')
@@ -13,18 +14,36 @@ const banner = `
  */
 `
 
-export default {
-  input: 'src/index.js',
-  output: {
-    format: 'umd',
-    file: 'dist/index.js',
-    name: 'performance',
-    sourcemap: false,
-    banner: banner.replace(/\n/, '')
+export default [
+  {
+    input: 'src/index.js',
+    output: {
+      format: 'umd',
+      file: 'dist/draggable.js',
+      name: 'performance',
+      sourcemap: false,
+      banner: banner.replace(/\n/, '')
+    },
+    plugins: [
+      babel(),
+      resolve(),
+      commonJs()
+    ]
   },
-  plugins: [
-    babel(),
-    resolve(),
-    commonJs()
-  ]
-}
+  {
+    input: 'src/index.js',
+    output: {
+      format: 'umd',
+      file: 'dist/draggable.min.js',
+      name: 'performance',
+      sourcemap: false,
+      banner: banner.replace(/\n/, '')
+    },
+    plugins: [
+      babel(),
+      uglify(),
+      resolve(),
+      commonJs()
+    ]
+  }
+]

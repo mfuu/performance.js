@@ -1,10 +1,10 @@
-import { getEntries } from './data'
+import { getEntries } from './data.js'
 
-import { checkResourceType, checkNumber } from '../utils'
+import { checkResourceType, checkNumber } from '../utils.js'
 
 const RESOURCES = 'resources'
 
-export async function Resources(callback) {
+export async function Resources() {
   const resources = await getEntries('resource')
   if (!resources.length) return
 
@@ -17,7 +17,7 @@ export async function Resources(callback) {
     result[`${RESOURCES}_${type}_source`] = result[`${RESOURCES}_${type}_source`] || []
     result[`${RESOURCES}_${type}_source`].push(item)
   })
-  callback(result)
+  return result
 }
 
 function add(result, type, key, value) {

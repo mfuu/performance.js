@@ -4,10 +4,11 @@
  * https://github.com/mfuu/performance#readme
  */
 
-(function (factory) {
+(function (global, factory) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
-  factory();
-})((function () { 'use strict';
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.Performance = factory());
+})(this, (function () { 'use strict';
 
   function ownKeys(object, enumerableOnly) {
     var keys = Object.keys(object);
@@ -79,31 +80,6 @@
         _next(undefined);
       });
     };
-  }
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  function _defineProperties(target, props) {
-    for (var i = 0; i < props.length; i++) {
-      var descriptor = props[i];
-      descriptor.enumerable = descriptor.enumerable || false;
-      descriptor.configurable = true;
-      if ("value" in descriptor) descriptor.writable = true;
-      Object.defineProperty(target, descriptor.key, descriptor);
-    }
-  }
-
-  function _createClass(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties(Constructor, staticProps);
-    Object.defineProperty(Constructor, "prototype", {
-      writable: false
-    });
-    return Constructor;
   }
 
   function _defineProperty(obj, key, value) {
@@ -927,86 +903,6 @@
 
   var regenerator = runtime_1;
 
-  function getTiming() {
-    var timing = {};
-
-    if (!window.performance.timing && !window.PerformanceNavigationTiming) {
-      console.error('Performance Error: this browser does not support performance timing');
-      return {};
-    }
-
-    if (window.performance.timing) {
-      timing = window.performance.timing;
-    } // 优先使用 navigation v2  https://www.w3.org/TR/navigation-timing-2/
-
-
-    if (typeof window.PerformanceNavigationTiming === 'function') {
-      try {
-        var nt2Timing = performance.getEntriesByType('navigation')[0];
-        if (nt2Timing) timing = nt2Timing;
-      } catch (err) {//
-      }
-    }
-
-    if (timing.loadEventEnd - timing.navigationStart < 0) {
-      console.info('Page is still loading');
-    }
-
-    return timing;
-  }
-  var getEntries = function getEntries() {
-    for (var _len = arguments.length, entryTypes = new Array(_len), _key = 0; _key < _len; _key++) {
-      entryTypes[_key] = arguments[_key];
-    }
-
-    return new Promise(function (resolve, reject) {
-      try {
-        var _ref;
-
-        if (!window.performance) {
-          reject(new Error('Performance Error: Performance API is not supported'));
-          return;
-        }
-
-        if (!entryTypes.length) {
-          reject(new TypeError('Performance Error: A Performance Observer must have a non-empty entryTypes attribute'));
-          return;
-        }
-
-        var getEntryMethod = window.performance.getEntriesByType ? 'getEntriesByType' : window.performance.webkitGetEntriesByType ? 'webkitGetEntriesByType' : '';
-        var entries = getEntryMethod ? (_ref = []).concat.apply(_ref, _toConsumableArray(entryTypes.map(function (entryType) {
-          return window.performance[getEntryMethod](entryType);
-        }))) : [];
-
-        if (entries.length) {
-          resolve(entries);
-          return;
-        }
-
-        if (typeof window.PerformanceObserver !== 'function') {
-          reject(new Error('Performance Error: PerformanceObserver is not supported'));
-          return;
-        }
-
-        var observer = new window.PerformanceObserver(function (entryList, observer) {
-          resolve(entryList.getEntries());
-          observer.disconnect();
-        });
-
-        try {
-          observer.observe({
-            entryTypes: entryTypes
-          });
-        } catch (e) {
-          observer.disconnect();
-          reject(e);
-        }
-      } catch (e) {
-        reject(e);
-      }
-    });
-  };
-
   /**
    * @type {string}
    */
@@ -1082,28 +978,6 @@
 
     return Math.round(firstPaintTime);
   }
-  function formatMs(ms) {
-    var readable = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-    if (!ms) ms = 0;
-    var ret = "".concat(ms.toFixed(2), " ms");
-    if (!readable) return ret;
-    var ONE_SECOND = 1000;
-    var ONE_MINUTE = 60 * ONE_SECOND;
-    var ONE_HORE = 60 * ONE_MINUTE; // 小于1秒，那么用毫秒为单位
-
-    if (ms >= ONE_SECOND && ms < ONE_MINUTE) {
-      // 大于一秒小于一分钟，用秒作为单位
-      ret = "".concat((ms / 1000).toFixed(2), " s");
-    } else if (ms >= ONE_MINUTE && ms < ONE_HORE) {
-      // 大于一分钟，小于一小时，用分钟作单位
-      ret = "".concat((ms / 1000 / 60).toFixed(2), " m");
-    } else if (ms >= ONE_HORE) {
-      // 大于一个小时，用小时作单位
-      ret = "".concat((ms / 1000 / 60 / 60).toFixed(2), " h");
-    }
-
-    return ret;
-  }
   function checkNumber(number) {
     if (typeof number !== 'number') return;
     var value = parseFloat(number);
@@ -1136,124 +1010,136 @@
     return key.replace(/([A-Z])/g, '_$1').replace(/-/g, '_').toLowerCase().replace(/_j_s_/g, '_js_');
   }
 
-  function Timing(callback) {
-    var timing = getTiming();
-    var startTime = timing.navigationStart || timing.fetchStart;
-    var result = {
-      // 重定向时间
-      redirect_time: timing.redirectEnd - timing.redirectStart,
-      // dns查询耗时
-      dns_time: timing.domainLookupEnd - timing.domainLookupStart,
-      // TTFB 读取页面第一个字节的时间
-      ttfb_time: timing.responseStart - startTime,
-      // DNS 缓存时间
-      appcache_time: timing.domainLookupStart - startTime,
-      // 卸载页面的时间
-      unload_time: timing.unloadEventEnd - timing.unloadEventStart,
-      // tcp连接耗时
-      tcp_time: timing.connectEnd - timing.connectStart,
-      // request请求耗时
-      request_time: timing.responseEnd - timing.responseStart,
-      // 解析dom树耗时
-      analysis_time: timing.domComplete - timing.domInteractive,
-      // 白屏时间
-      blank_time: (timing.domInteractive || timing.domLoading) - startTime,
-      // 首屏时间
-      firstPaint_time: getFirstPaintTime() - startTime,
-      // domReadyTime
-      dom_ready_time: timing.domContentLoadedEventEnd - startTime,
-      // 页面加载完成的时间
-      page_loaded_time: timing.loadEventEnd - startTime,
-      // 开始加载文档到文档资源全部加载完毕的时间
-      processing_time: timing.loadEventStart - timing.domLoading,
-      // 执行 onload 回调函数的时间
-      onload_time: timing.loadEventEnd - timing.loadEventStart,
-      redirectStart: timing.redirectStart ? timing.redirectStart - startTime : 0,
-      AppCacheStart: timing.fetchStart - startTime,
-      dnsStart: timing.domainLookupStart ? timing.domainLookupStart - startTime : 0,
-      connectStart: timing.connectStart - startTime,
-      sslStart: timing.secureConnectionStart ? timing.secureConnectionStart - startTime : 0,
-      requestStart: timing.requestStart - startTime,
-      downloadStart: timing.responseStart - startTime,
-      processingStart: timing.responseEnd - startTime,
-      domLoadingStart: timing.domLoading - startTime,
-      loadEventStart: timing.loadEventStart - startTime,
-      firstByteTime: timing.responseStart - timing.requestStart,
-      domInteractiveTime: timing.domInteractive - startTime,
-      domCompleteTime: timing.domComplete - startTime,
-      pageLoadTime: timing.loadEventStart - startTime,
-      visualCompleteTime: timing.visualCompleteTime - startTime,
-      redirectTime: timing.redirectEnd - timing.redirectStart,
-      appCacheTime: timing.domainLookupStart - timing.fetchStart,
-      dnsTime: timing.domainLookupEnd - timing.domainLookupStart,
-      // connectTime and sslTime time depend on whether secureConnectionStart has a value > 0
-      connectTime: (timing.secureConnectionStart || timing.connectEnd) - timing.connectStart,
-      sslTime: timing.connectEnd - (timing.secureConnectionStart || timing.connectEnd),
-      downloadTime: timing.responseEnd - timing.responseStart,
-      processingTime: timing.loadEventStart - timing.responseEnd,
-      loadingTime: timing.loadEventEnd - timing.loadEventStart
-    };
+  var getTiming = function getTiming() {
+    return new Promise(function (resolve, reject) {
+      var timing = {};
 
-    for (var key in result) {
-      // 删除无用数据，避免干扰(小于等于0或大于两分钟)
-      if (result[key] <= 0 || result[key] >= 120000) delete result[key];
+      if (!window.performance.timing && !window.PerformanceNavigationTiming) {
+        reject(new Error('Performance Error: this browser does not support performance timing'));
+      }
+
+      if (window.performance.timing) timing = window.performance.timing; // 优先使用 navigation v2  https://www.w3.org/TR/navigation-timing-2/
+
+      if (typeof window.PerformanceNavigationTiming === 'function') {
+        try {
+          var nt2Timing = performance.getEntriesByType('navigation')[0];
+          if (nt2Timing) timing = nt2Timing;
+        } catch (err) {
+          reject(new Error("Performance Error: ".concat(err)));
+        }
+      }
+
+      resolve(timing);
+    });
+  };
+  var getEntries = function getEntries() {
+    for (var _len = arguments.length, entryTypes = new Array(_len), _key = 0; _key < _len; _key++) {
+      entryTypes[_key] = arguments[_key];
     }
 
-    callback(result);
-  }
-  function FirstInput(_x) {
-    return _FirstInput.apply(this, arguments);
+    return new Promise(function (resolve, reject) {
+      try {
+        var _ref;
+
+        if (!window.performance) reject(new Error('Performance Error: Performance API is not supported'));
+        if (!entryTypes.length) reject(new TypeError('Performance Error: A Performance Observer must have a non-empty entryTypes attribute'));
+        var getEntryMethod = window.performance.getEntriesByType ? 'getEntriesByType' : window.performance.webkitGetEntriesByType ? 'webkitGetEntriesByType' : '';
+        var entries = getEntryMethod ? (_ref = []).concat.apply(_ref, _toConsumableArray(entryTypes.map(function (entryType) {
+          return window.performance[getEntryMethod](entryType);
+        }))) : [];
+        if (entries.length) resolve(entries);
+        if (typeof window.PerformanceObserver !== 'function') reject(new Error('Performance Error: PerformanceObserver is not supported'));
+        var observer = new window.PerformanceObserver(function (entryList, observer) {
+          resolve(entryList.getEntries());
+          observer.disconnect();
+        });
+
+        try {
+          observer.observe({
+            entryTypes: entryTypes
+          });
+        } catch (e) {
+          observer.disconnect();
+          reject(e);
+        }
+      } catch (e) {
+        reject(e);
+      }
+    });
+  };
+
+  function Timing() {
+    return _Timing.apply(this, arguments);
   }
 
-  function _FirstInput() {
-    _FirstInput = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee(callback) {
+  function _Timing() {
+    _Timing = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee() {
+      var timing, startTime, result, key;
       return regenerator.wrap(function _callee$(_context) {
         while (1) {
           switch (_context.prev = _context.next) {
             case 0:
-              // 观察首次交互
-              new PerformanceObserver(function (entryList, observer) {
-                var firstInput = entryList.getEntries()[0];
+              _context.next = 2;
+              return getTiming();
 
-                if (firstInput) {
-                  // 处理延迟 = 开始处理的时间 - 开始点击的时间
-                  var inputDelay = firstInput.processingStart - firstInput.startTime;
-                  var duration = firstInput.duration; // 处理的耗时
+            case 2:
+              timing = _context.sent;
+              startTime = timing.navigationStart || timing.fetchStart;
+              result = {
+                redirect_time: timing.redirectEnd - timing.redirectStart,
+                // 重定向时间
+                dns_time: timing.domainLookupEnd - timing.domainLookupStart,
+                // dns查询耗时
+                ttfb_time: timing.responseStart - startTime,
+                // TTFB 读取页面第一个字节的时间
+                appcache_time: timing.domainLookupStart - startTime,
+                // DNS 缓存时间
+                unload_time: timing.unloadEventEnd - timing.unloadEventStart,
+                // 卸载页面的时间
+                tcp_time: timing.connectEnd - timing.connectStart,
+                // tcp连接耗时
+                request_time: timing.responseEnd - timing.responseStart,
+                // request请求耗时
+                analysis_time: timing.domComplete - timing.domInteractive,
+                // 解析dom树耗时
+                blank_time: (timing.domInteractive || timing.domLoading) - startTime,
+                // 白屏时间
+                firstPaint_time: getFirstPaintTime() - startTime,
+                // 首屏时间
+                dom_ready_time: timing.domContentLoadedEventEnd - startTime,
+                // domReadyTime
+                page_loaded_time: timing.loadEventEnd - startTime,
+                // 页面加载完成的时间
+                processing_time: timing.loadEventStart - timing.domLoading,
+                // 开始加载文档到文档资源全部加载完毕的时间
+                onload_time: timing.loadEventEnd - timing.loadEventStart // 执行 onload 回调函数的时间
 
-                  if (inputDelay > 0 || duration > 0) {
-                    var data = {
-                      first_input_delay: inputDelay,
-                      first_input_duration: duration,
-                      first_input_start_time: firstInput.startTime // 开始处理的时间
+              };
 
-                    };
-                    callback(data);
-                  }
-                }
+              for (key in result) {
+                // 删除无用数据，避免干扰(小于等于0或大于两分钟)
+                if (result[key] <= 0 || result[key] >= 120000) delete result[key];
+              }
 
-                observer.disconnect();
-              }).observe({
-                type: 'first-input',
-                buffered: true
-              });
+              return _context.abrupt("return", result);
 
-            case 1:
+            case 7:
             case "end":
               return _context.stop();
           }
         }
       }, _callee);
     }));
-    return _FirstInput.apply(this, arguments);
+    return _Timing.apply(this, arguments);
   }
 
   var RESOURCES = 'resources';
-  function Resources(_x) {
+  function Resources() {
     return _Resources.apply(this, arguments);
   }
 
   function _Resources() {
-    _Resources = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee(callback) {
+    _Resources = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee() {
       var resources, result;
       return regenerator.wrap(function _callee$(_context) {
         while (1) {
@@ -1282,7 +1168,7 @@
                 result["".concat(RESOURCES, "_").concat(type, "_source")] = result["".concat(RESOURCES, "_").concat(type, "_source")] || [];
                 result["".concat(RESOURCES, "_").concat(type, "_source")].push(item);
               });
-              callback(result);
+              return _context.abrupt("return", result);
 
             case 8:
             case "end":
@@ -1310,12 +1196,12 @@
     255: 'unknown' // 任何其他来源的加载，相当于常数performance.navigation.TYPE_RESERVED
 
   };
-  function Navigation(_x) {
+  function Navigation() {
     return _Navigation.apply(this, arguments);
   }
 
   function _Navigation() {
-    _Navigation = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee(callback) {
+    _Navigation = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee() {
       var _ref, connection, result, _yield$getEntries, _yield$getEntries2, _yield$getEntries2$, _yield$getEntries2$$n, navigation;
 
       return regenerator.wrap(function _callee$(_context) {
@@ -1340,11 +1226,11 @@
                   redirect_count: navigation.redirectCount,
                   // 重定向的数量（只读），但是这个接口有同源策略限制，即仅能检测同源的重定向；
                   connection_type: connection.type,
-                  effective_connection_type: connection.effectiveType
+                  connection_effective_type: connection.effectiveType
                 });
               }
 
-              callback(result);
+              return _context.abrupt("return", result);
 
             case 12:
             case "end":
@@ -1360,23 +1246,29 @@
   'totalJSHeapSize', // 可使用的内存
   'usedJSHeapSize' // JS 对象（包括V8引擎内部对象）占用的内存
   ];
-  function Memory(callback) {
-    var _ref = window.performance || {},
-        memory = _ref.memory;
+  var Memory = function Memory() {
+    return new Promise(function (resolve, reject) {
+      try {
+        var _ref = window.performance || {},
+            memory = _ref.memory;
 
-    if (!memory) return {};
-    var result = Object.assign.apply(Object, _toConsumableArray(MEMORY_TYPES.map(function (item) {
-      return _defineProperty({}, formatKey(item), checkNumber(memory[item]));
-    })));
-    callback(result);
-  }
+        if (!memory) return {};
+        var result = Object.assign.apply(Object, _toConsumableArray(MEMORY_TYPES.map(function (item) {
+          return _defineProperty({}, formatKey(item), checkNumber(memory[item]));
+        })));
+        resolve(result);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  };
 
-  function Paint(_x) {
+  function Paint() {
     return _Paint.apply(this, arguments);
   }
 
   function _Paint() {
-    _Paint = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee(callback) {
+    _Paint = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee() {
       var _ref;
 
       var entries, result;
@@ -1394,7 +1286,7 @@
                     startTime = _ref2.startTime;
                 return _defineProperty({}, name, checkNumber(startTime));
               }))))));
-              callback(result);
+              return _context.abrupt("return", result);
 
             case 5:
             case "end":
@@ -1406,13 +1298,13 @@
     return _Paint.apply(this, arguments);
   }
 
-  function Errors(callback) {
+  var Errors = function Errors(cb) {
     // js 运行时的错误捕获
     window.addEventListener('error', function (event) {
       var lastEvent = getLastEvent(); // 获取最后一个交互事件
 
       if (event.target && (event.target.src || event.target.href || e.target.currentSrc)) {
-        callback({
+        resolve({
           error_listener: {
             filename: event.target.src || event.target.href || e.target.currentSrc,
             tagName: event.target.tagName,
@@ -1422,7 +1314,7 @@
           }
         });
       } else {
-        callback({
+        cb({
           error_listener: {
             filename: event.filename,
             // 报错文件
@@ -1445,7 +1337,7 @@
           message: error && error.stack ? error.stack.toString() : event,
           time: Date.now()
         };
-        callback({
+        cb({
           window_onerror: result
         });
       }, 0);
@@ -1472,13 +1364,13 @@
         stack = getLines(event.reason.stack);
       }
 
-      callback({
+      cb({
         promise_error: _objectSpread2(_objectSpread2({}, result), {}, {
           selector: lastEvent ? lastEvent.path : ''
         })
       });
     }, true);
-  }
+  };
 
   function getLines(stack) {
     return stack.split('\n').slice(1).map(function (item) {
@@ -1486,65 +1378,76 @@
     }).join('^');
   }
 
-  function PageView(callback) {
-    var connection = navigator.connection;
-    callback({
-      pv: {
-        effectiveType: connection.effectiveType,
-        //网络环境
-        rtt: connection.rtt,
-        //往返时间
-        screen: "".concat(window.screen.width, "x").concat(window.screen.height) //设备分辨率
+  var PageView = function PageView() {
+    return new Promise(function (resolve, reject) {
+      try {
+        var connection = navigator.connection;
+        resolve({
+          pageview: {
+            effectiveType: connection.effectiveType,
+            //网络环境
+            rtt: connection.rtt,
+            //往返时间
+            screen: "".concat(window.screen.width, "x").concat(window.screen.height) //设备分辨率
 
+          }
+        });
+        var startTime = Date.now();
+        window.addEventListener('unload', function () {
+          var stayTime = Date.now() - startTime;
+          resolve({
+            pageview_stay_time: stayTime
+          });
+        }, false);
+      } catch (err) {
+        reject(err);
       }
     });
-    var startTime = Date.now();
-    window.addEventListener('unload', function () {
-      var stayTime = Date.now() - startTime;
-      callback({
-        pv_stay_time: stayTime
-      });
-    }, false);
-  }
+  };
 
   var ELEMENTS = ['html', 'body']; // 白屏
 
-  function BlankScreen(callback) {
-    var wrapperElements = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
-    var elements = [].concat(ELEMENTS, _toConsumableArray(wrapperElements));
-    var emptyPoints = 0;
+  var BlankScreen = function BlankScreen() {
+    var wrapperElements = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+    return new Promise(function (resolve, reject) {
+      try {
+        var isWrapper = function isWrapper(element) {
+          var selector = getSelector(element);
 
-    function isWrapper(element) {
-      var selector = getSelector(element);
-
-      if (elements.indexOf(selector) !== -1) {
-        emptyPoints++;
-      }
-    }
-
-    onload(function () {
-      var x, y;
-
-      for (var i = 0; i < 9; i++) {
-        x = document.elementFromPoint(window.innerWidth * i / 10, window.innerHeight / 2);
-        y = document.elementFromPoint(window.innerWidth / 2, window.innerHeight * i / 10);
-        isWrapper(x[0]);
-        isWrapper(y[0]);
-      }
-
-      if (emptyPoints > 0) {
-        var centerElements = document.elementFromPoint(window.innerWidth / 2, window.innerHeight / 2);
-        callback({
-          blank_screen: {
-            emptyPoints: emptyPoints,
-            screen: window.screen.width + 'X' + window.screen.height,
-            viewPoint: window.innerWidth + 'X' + window.innerHeight,
-            selector: centerElements[0]
+          if (elements.indexOf(selector) !== -1) {
+            emptyPoints++;
           }
-        });
+        };
+
+        var elements = [].concat(ELEMENTS, _toConsumableArray(wrapperElements));
+        var emptyPoints = 0;
+        var x, y;
+
+        for (var i = 0; i < 9; i++) {
+          x = document.elementFromPoint(window.innerWidth * i / 10, window.innerHeight / 2);
+          y = document.elementFromPoint(window.innerWidth / 2, window.innerHeight * i / 10);
+          isWrapper(x[0]);
+          isWrapper(y[0]);
+        }
+
+        if (emptyPoints > 0) {
+          var centerElements = document.elementFromPoint(window.innerWidth / 2, window.innerHeight / 2);
+          resolve({
+            blank_screen: {
+              emptyPoints: emptyPoints,
+              screen: window.screen.width + 'X' + window.screen.height,
+              viewPoint: window.innerWidth + 'X' + window.innerHeight,
+              selector: centerElements[0]
+            }
+          });
+        } else {
+          resolve({});
+        }
+      } catch (err) {
+        reject(err);
       }
     });
-  }
+  };
 
   function getSelector(element) {
     var _ref = element || {},
@@ -1564,82 +1467,40 @@
     }
   }
 
-  var Performance = /*#__PURE__*/function () {
-    function Performance(options) {
-      _classCallCheck(this, Performance);
+  function Performance(options) {
+    this.options = options || {};
 
-      this.options = options || {}; // requestAnimationFrame(this.init.bind(this))
-      // this._addEventListener()
-
-      this.init();
-    }
-
-    _createClass(Performance, [{
-      key: "init",
-      value: function init() {
-        var _this = this;
-
-        window.performance_information = {
-          domain: encodeURIComponent(document.domain),
-          path: encodeURIComponent(window.location.pathname.toLowerCase().replace(/\//g, '_'))
-        };
-        onload(function () {
-          Timing(_this._callback);
-          FirstInput(_this._callback);
-          Resources(_this._callback);
-          Navigation(_this._callback);
-          BlankScreen(_this._callback, _this.options.wrapperElements);
-          Memory(_this._callback);
-          Paint(_this._callback);
-          Errors(_this._callback);
-          PageView(_this._callback);
-        });
-      }
-    }, {
-      key: "_callback",
-      value: function _callback(data) {
-        window.performance_information = window.performance_information || {};
-        Object.assign(window.performance_information, data);
-        console.log(window.performance_information);
-        console.log('DNS查询耗时：', formatMs(window.performance_information.dnsTime));
-        console.log('TCP连接耗时:', formatMs(window.performance_information.tcpTime));
-        console.log('解析dom树耗时:', formatMs(window.performance_information.analysisTime));
-        console.log('白屏时间:', formatMs(window.performance_information.blankTime));
-        console.log('重定向耗时:', formatMs(window.performance_information.redirectTime));
-        console.log('读取页面第一个字节耗时:', formatMs(window.performance_information.ttfbTime));
-        console.log('DOM Ready耗时:', formatMs(window.performance_information.domReadyTime));
-        console.log('DNS 缓存时间:', formatMs(window.performance_information.appcacheTime));
-        console.log('执行 onload 回调函数耗时:', formatMs(window.performance_information.onload));
-        console.log('页面完全加载耗时:', formatMs(window.performance_information.loadPage));
-        console.log('js文件加载总耗时：', formatMs(window.performance_information.resources_javascript_duration));
-      }
-    }, {
-      key: "_print",
-      value: function _print(result) {
-        var table = document.createElement('table');
-        table.innerHTML = Object.entries(result).map(function (_ref) {
-          var _ref2 = _slicedToArray(_ref, 2),
-              key = _ref2[0],
-              value = _ref2[1];
-
-          return "<tr><td>".concat(key, "</td><td>").concat(value, "</td></tr>");
-        }).join('');
-        document.body.appendChild(table);
-      }
-    }, {
-      key: "_addEventListener",
-      value: function _addEventListener() {// document.addEventListener('popstate', this.init())
-        // document.addEventListener('hashchange', this.init())
-      }
-    }]);
-
-    return Performance;
-  }();
-
-  if (typeof require === 'function' && (typeof exports === "undefined" ? "undefined" : _typeof(exports)) === "object" && (typeof module === "undefined" ? "undefined" : _typeof(module)) === "object") {
-    module.exports = Performance;
-  } else {
-    window.Performance = Performance;
+    this._init();
   }
+
+  Performance.prototype = {
+    constructor: Performance,
+    _init: function _init() {
+      var _this = this;
+
+      window.performanceInfo = {
+        domain: encodeURIComponent(document.domain),
+        href: window.location.href.toLowerCase(),
+        path: encodeURIComponent(window.location.pathname.toLowerCase().replace(/\//g, '_'))
+      };
+      onload(function () {
+        Errors(function (obj) {
+          Object.assign(window.performanceInfo, obj);
+        });
+        Promise.all([Timing(), Resources(), Navigation(), Memory(), Paint(), PageView(), BlankScreen()]).then(function (list) {
+          list.forEach(function (item) {
+            Object.assign(window.performanceInfo, item);
+          });
+
+          _this._handleTiming();
+        });
+      });
+    },
+    _handleTiming: function _handleTiming() {
+      console.log(window.performanceInfo);
+    }
+  };
+
+  return Performance;
 
 }));

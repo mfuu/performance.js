@@ -1,14 +1,72 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-cmn-Hans" prefix="og: http://ogp.me/ns#" class="han-init">
+
 <head>
-  <meta charset="UTF-8">
-  <title>Performance</title>
-  <script src="./dist/index.js"></script>
-  <script>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>performance</title>
+  <script src="https://cdn.jsdelivr.net/npm/sortable-dnd@0.1.3/dist/sortable.min.js"></script>
+  <style>
+    ul {
+      padding: 0;
+      margin: 0;
+    }
+
+    li {
+      list-style: none;
+    }
+
+    .group {
+      width: 100px;
+      margin: 0 auto;
+      border: 1px solid #ccc;
+      margin-bottom: 100px;
+    }
+
+    .group li {
+      text-align: center;
+      padding: 5px;
+      margin: 5px;
+      border: 1px solid #aaa;
+    }
+
+    .flex-group {
+      width: 500px;
+      height: 500px;
+      overflow: hidden auto;
+      margin: 0 auto;
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-bottom: 100px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+
+    .flex-group li {
+      text-align: center;
+      width: 100px;
+      height: 100px;
+      padding: 5px;
+      border: 1px solid #aaa;
+    }
+
+    .chosen {
+      background-color: #c8ebfb;
+    }
+  </style>
+</head>
+
+<body>
+  <ul id="group" class="group"></ul>
+  <ul id="flexgroup" class="flex-group"></ul>
+  <ul id="flexdrag" class="flex-group"></ul>
+  <script type="module">
+    import Performance from './src/index.js'
+    const Sortable = window.Sortable; const group = document.getElementById('group'); const children1 = []; for (let i = 0; i < 10; i++) { let li = document.createElement('li'); li.innerText = i + 1; children1.push(li); } group.append(...children1); new Sortable(document.getElementById('group'), { ghostAnimation: 500, ghostStyle: { border: '1px solid #aaa', textAlign: 'center' }, chosenClass: 'chosen', dragEnd: (pre, cur) => { console.log(pre, cur) } }); const flexG = document.getElementById('flexgroup'); const children2 = []; for (let i = 0; i < 16; i++) { let li = document.createElement('li'); li.innerText = i + 1; children2.push(li); } flexG.append(...children2); new Sortable(document.getElementById('flexgroup'), { ghostAnimation: 500, ghostStyle: { border: '1px solid #aaa', textAlign: 'center' }, chosenClass: 'chosen', dragEnd: (pre, cur) => { console.log(pre, cur) } }); const flexDrag = document.getElementById('flexdrag'); const children3 = []; for (let i = 0; i < 16; i++) { let li = document.createElement('li'); li.innerHTML = `<i>drag me</i><p>${i + 1}</p>`; children3.push(li); } flexDrag.append(...children3); new Sortable(document.getElementById('flexdrag'), { ghostAnimation: 500, ghostStyle: { border: '1px solid #aaa', textAlign: 'center' }, chosenClass: 'chosen', draggable: 'i', dragEnd: (pre, cur) => { console.log(pre, cur) } });
     new Performance()
   </script>
-</head>
-<body>
-  
 </body>
+
 </html>

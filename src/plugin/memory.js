@@ -1,4 +1,4 @@
-import { checkNumber, formatKey } from '../utils'
+import { checkNumber, formatKey } from '../utils.js'
 
 const MEMORY_TYPES = [
   'jsHeapSizeLimit', // 内存大小限制
@@ -6,14 +6,20 @@ const MEMORY_TYPES = [
   'usedJSHeapSize', // JS 对象（包括V8引擎内部对象）占用的内存
 ]
 
-export function Memory(callback) {
-  const { memory } = window.performance || {}
+export const Memory = () => {
+  return new Promise((resolve, reject) => {
+    try {
+      const { memory } = window.performance || {}
 
-  if (!memory) return {}
+      if (!memory) return {}
 
-  const result = Object.assign(
-    ...MEMORY_TYPES.map((item) => ({ [formatKey(item)]: checkNumber(memory[item]) }))
-  )
+      const result = Object.assign(
+        ...MEMORY_TYPES.map((item) => ({ [formatKey(item)]: checkNumber(memory[item]) }))
+      )
 
-  callback(result)
+      resolve(result)
+    } catch (err) {
+      reject(err)
+    }
+  })
 }

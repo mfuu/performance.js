@@ -1,30 +1,30 @@
-import { onload, getLastEvent, getFirstPaintTime } from '../utils'
+import { onload, getLastEvent, getFirstPaintTime } from '../utils.js'
 
-export function Errors(callback) {
+export const Errors = (cb) => {
   // js 运行时的错误捕获
   window.addEventListener(
     'error',
     (event) => {
       const lastEvent = getLastEvent() // 获取最后一个交互事件
       if (event.target && (event.target.src || event.target.href || e.target.currentSrc)) {
-        callback({
+        resolve({
           error_listener: {
             filename: event.target.src || event.target.href || e.target.currentSrc,
             tagName: event.target.tagName,
             message: event.target.localName + ' is load error',
             selector: event.target,
             time: Date.now(),
-          },
+          }
         })
       } else {
-        callback({
+        cb({
           error_listener: {
             filename: event.filename, // 报错文件
             position: `${event.lineno}:${event.colno}`, // 行列位置
             message: event.message,
             selector: lastEvent || lastEvent.path,
             time: Date.now(),
-          },
+          }
         })
       }
     },
@@ -40,7 +40,7 @@ export function Errors(callback) {
         message: error && error.stack ? error.stack.toString() : event,
         time: Date.now(),
       }
-      callback({ window_onerror: result })
+      cb({ window_onerror: result })
     }, 0)
   }
 
@@ -64,11 +64,11 @@ export function Errors(callback) {
         }
         stack = getLines(event.reason.stack)
       }
-      callback({
+      cb({
         promise_error: {
           ...result,
           selector: lastEvent ? lastEvent.path : '',
-        },
+        }
       })
     },
     true

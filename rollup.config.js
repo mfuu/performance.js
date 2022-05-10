@@ -20,7 +20,7 @@ export default [
     output: {
       format: 'umd',
       file: 'dist/performance.js',
-      name: 'performance',
+      name: 'Performance',
       sourcemap: false,
       banner: banner.replace(/\n/, '')
     },
@@ -35,7 +35,7 @@ export default [
     output: {
       format: 'umd',
       file: 'dist/performance.min.js',
-      name: 'performance',
+      name: 'Performance',
       sourcemap: false,
       banner: banner.replace(/\n/, '')
     },

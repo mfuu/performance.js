@@ -43,63 +43,6 @@
 | loadEventEnd               | load回调函数执行完成的时间
 
 
-代码实现：
-
-```js
-export function Timing(callback) {
-  const timing = getTiming()
-  const startTime = timing.navigationStart || timing.fetchStart
-  const result = {
-    // 重定向时间
-    redirect_time: timing.redirectEnd - timing.redirectStart,
-
-    // dns查询耗时
-    dns_time: timing.domainLookupEnd - timing.domainLookupStart,
-
-    // TTFB 读取页面第一个字节的时间
-    ttfb_time: timing.responseStart - startTime,
-
-    // DNS 缓存时间
-    appcache_time: timing.domainLookupStart - startTime,
-
-    // 卸载页面的时间
-    unload_time: timing.unloadEventEnd - timing.unloadEventStart,
-
-    // tcp连接耗时
-    tcp_time: timing.connectEnd - timing.connectStart,
-
-    // request请求耗时
-    request_time: timing.responseEnd - timing.responseStart,
-
-    // 解析dom树耗时
-    analysis_time: timing.domComplete - timing.domInteractive,
-
-    // 白屏时间
-    blank_time: (timing.domInteractive || timing.domLoading) - startTime,
-
-    // 首屏时间
-    firstPaint_time: getFirstPaintTime() - startTime,
-
-    // domReadyTime
-    dom_ready_time: timing.domContentLoadedEventEnd - startTime,
-
-    // 页面加载完成的时间
-    page_loaded_time: timing.loadEventEnd - startTime,
-
-    // 开始加载文档到文档资源全部加载完毕的时间
-    processing_time: timing.loadEventStart - timing.domLoading,
-
-    // 执行 onload 回调函数的时间
-    onload_time: timing.loadEventEnd - timing.loadEventStart,
-  }
-  for (const key in result) {
-    // 删除无用数据，避免干扰(小于等于0或大于两分钟)
-    if (result[key] <= 0 || result[key] >= 120000) delete result[key]
-  }
-  callback(result)
-}
-```
-
 ### 性能指标
 
 | 指标 | 名称 | 解释 |
